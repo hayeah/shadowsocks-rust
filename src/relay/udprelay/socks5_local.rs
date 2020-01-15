@@ -219,16 +219,10 @@ impl UdpAssociation {
             }
             Some(b) => b,
         };
-        // SERVER -> CLIENT protocol: ADDRESS + PAYLOAD
+        // SERVER -> CLIENT protocol: [0,0,0] + ADDRESS + PAYLOAD
         let mut cur = Cursor::new(decrypt_buf);
-        // FIXME: Address is ignored. Maybe useful in the future if we uses one common UdpSocket for communicate with remote server
-        let _ = Address::read_from(&mut cur).await?;
+        let mut payload = vec![0x00, 0x00, 0x00];
 
-        let mut payload = Vec::new();
-
-        let header = UdpAssociateHeader::new(0, Address::SocketAddress(src_addr));
-
-        header.write_to_buf(&mut payload);
         cur.read_to_end(&mut payload)?;
 
         debug!(
